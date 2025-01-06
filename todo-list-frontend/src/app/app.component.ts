@@ -18,7 +18,10 @@ import { map } from "rxjs/operators";
       <label for="search">Search...</label>
         <input id="search" type="text" (input)="onSearch($any($event.target).value)">
       <app-progress-bar></app-progress-bar>
-      <app-todo-item *ngFor="let todo of filteredTodos$ | async" [item]="todo"></app-todo-item>
+      <app-todo-item *ngFor="let todo of filteredTodos$ | async" [item]="todo" (delete)="deleteTodo($event)"></app-todo-item>
+        <div *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
     </div>
   `,
   styleUrls: ['app.component.scss']
@@ -30,8 +33,11 @@ export class AppComponent {
   private searchTermSubject = new BehaviorSubject<string>('');
   readonly filteredTodos$: Observable<Todo[]>;
 
-  constructor(todoService: TodoService) {
-    this.todos$ = todoService.getAll();
+  errorMessage: string | null = null; //error message for failed delete
+
+  constructor(private todoService: TodoService) {
+    this.todos$ = this.todoService.todos$;
+    //this.todos$ = todoService.getAll();
 
     this.filteredTodos$ = combineLatest([this.todos$, this.searchTermSubject]).pipe(
       map(([todos, searchTerm]) =>
@@ -45,4 +51,16 @@ export class AppComponent {
   onSearch(searchTerm: string): void {
     this.searchTermSubject.next(searchTerm);
   }
+
+  deleteTodo(id: number): void {
+    this.todoService.remove(id).subscribe({
+      next: () => {
+        this.errorMessage = null; // Clear error message on success
+      },
+      error: () => {
+        this.errorMessage = `Failed to delete TODO with id ${id}. Please try again.`;
+      }
+    });
+  }
+  
 }

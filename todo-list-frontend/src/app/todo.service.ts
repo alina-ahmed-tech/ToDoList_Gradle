@@ -30,6 +30,10 @@ export class TodoService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   loading$ = this.loadingSubject.asObservable();
 
+  //list of todos
+  private todosSubject = new BehaviorSubject<Todo[]>(mockData);
+  todos$ = this.todosSubject.asObservable();
+
   getAll(): Observable<Todo[]> {
     this.loadingSubject.next(true); //start loading
     return of(undefined).pipe(delay(2_000), map(() => mockData), 
@@ -42,7 +46,9 @@ export class TodoService {
       setTimeout(() => {
         if (Math.random() < .8) {
           removeFromMockData(id);
+          this.todosSubject.next([...mockData]);
           observer.next();
+          console.log("clicked")
         } else {
           observer.error('Failed');
         }

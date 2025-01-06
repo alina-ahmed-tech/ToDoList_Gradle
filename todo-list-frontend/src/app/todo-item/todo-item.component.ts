@@ -1,14 +1,18 @@
 import {Component, Input} from '@angular/core';
 import {Todo} from "../todo.service";
+import {EventEmitter} from '@angular/core';
+import {Output} from '@angular/core';
 
 @Component({
   selector: 'app-todo-item',
   template: `
-      <div class="task-indicator">
-        {{ item.task }}
-      </div>
-      <div class="priority-indicator" [style.background-color]="color">
-        {{ item.priority }}
+      <div class="todo-item" (click)="onClick()">
+        <div class="task-indicator">
+          {{ item.task }}
+        </div>
+        <div class="priority-indicator" [style.background-color]="color">
+          {{ item.priority }}
+        </div>
       </div>
   `,
   styleUrls: ['todo-item.component.scss']
@@ -16,6 +20,7 @@ import {Todo} from "../todo.service";
 export class TodoItemComponent {
 
   @Input() item!: Todo;
+  @Output() delete = new EventEmitter<number>();
 
   get color() {
     switch (this.item.priority) {
@@ -26,5 +31,8 @@ export class TodoItemComponent {
       case 3:
         return 'red';
     }
+  }
+  onClick(): void {
+    this.delete.emit(this.item.id); // Emit the ID of the clicked TODO
   }
 }
