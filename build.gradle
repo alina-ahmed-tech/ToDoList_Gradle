@@ -1,6 +1,7 @@
 allprojects {
     apply plugin: "idea"
     apply plugin: "eclipse"
+    
     idea {
         module {
             inheritOutputDirs = true
@@ -17,13 +18,26 @@ allprojects {
 subprojects {
 
     apply plugin: "java"
-    apply plugin: "maven"
+    apply plugin: "maven-publish" // Replaced 'maven' with 'maven-publish'
 
-    group "com.todo"
-    version = version
+    group = "com.todo"
+    version = "1.0.0" // Replace this with your actual project version
 
     repositories {
         mavenCentral()
     }
 
+    // Add publishing configuration for maven-publish plugin
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+            }
+        }
+        repositories {
+            maven {
+                url = uri("${buildDir}/repo") // Replace with your repository location if needed
+            }
+        }
+    }
 }
