@@ -1,6 +1,8 @@
 import {Injectable} from '@angular/core';
 import {Observable, of} from "rxjs";
 import {delay, map} from "rxjs/operators";
+import { BehaviorSubject } from 'rxjs';
+import { tap } from "rxjs/operators";
 
 export interface Todo {
   id: number;
@@ -24,11 +26,18 @@ function removeFromMockData(id: number) {
 })
 export class TodoService {
 
+  //track loading state of progress bar
+  private loadingSubject = new BehaviorSubject<boolean>(false);
+  loading$ = this.loadingSubject.asObservable();
+
   getAll(): Observable<Todo[]> {
-    return of(undefined).pipe(delay(2_000), map(() => mockData));
+    this.loadingSubject.next(true); //start loading
+    return of(undefined).pipe(delay(2_000), map(() => mockData), 
+    tap(() => this.loadingSubject.next(false))); //stop loading
   }
 
   remove(id: number): Observable<void> {
+    this.loadingSubject.next(true); //start loading
     return new Observable<void>(observer => {
       setTimeout(() => {
         if (Math.random() < .8) {
@@ -37,6 +46,7 @@ export class TodoService {
         } else {
           observer.error('Failed');
         }
+        this.loadingSubject.next(false); //stop loading
         observer.complete();
       }, 2_000)
     })
