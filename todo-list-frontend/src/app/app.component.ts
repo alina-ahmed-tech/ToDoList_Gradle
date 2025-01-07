@@ -4,6 +4,7 @@ import {Observable} from "rxjs";
 import { BehaviorSubject } from "rxjs";
 import { combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
+import { switchMap } from 'rxjs/operators';
 
 
 @Component({
@@ -36,8 +37,10 @@ export class AppComponent {
   errorMessage: string | null = null; //error message for failed delete
 
   constructor(private todoService: TodoService) {
-    this.todos$ = this.todoService.todos$;
-    //this.todos$ = todoService.getAll();
+    this.todos$ = this.todoService.getAll().pipe(
+      // once the initial fetch is complete, switch to observing reactive updates
+      switchMap(() => this.todoService.todos$)
+    );
 
     this.filteredTodos$ = combineLatest([this.todos$, this.searchTermSubject]).pipe(
       map(([todos, searchTerm]) =>
